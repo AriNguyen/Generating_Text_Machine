@@ -27,7 +27,7 @@ class PData(object):
     def set_data(self, data):
         self._data = data
 
-    def set_word_list(self, word_list):
+    def set_word_list(self, word_list, vocab_file_path):
         self._word_list = word_list
         self._data_size = len(word_list)
 
@@ -36,6 +36,13 @@ class PData(object):
         self._vocabs_size = len(self._vocabs)
         self._vocab_to_int = dict((word, integer) for integer, word in enumerate(self._vocabs))
         self._int_to_vocab = dict((integer, word) for integer, word in enumerate(self._vocabs))
+
+        save_wordlist_vocabs(
+            vocab_file_path=vocab_file_path,
+            words=self._word_list,
+            vocabs=self._vocabs,
+            vocabs_to_int=self._vocab_to_int
+        )
 
     def set_sequences(self, sequences):
         self._sequences = sequences
@@ -68,13 +75,13 @@ class PData(object):
     def get_sequences_size(self):
         return self._sequences_size
 
-    def get_sequences(self):
+    def get_sequences_matrix(self):
         return self._sequences
 
     def set_next_words(self, n):
         self._next_words = n
 
-    def get_next_words(self):
+    def get_next_words_matrix(self):
         return self._next_words
 
     def get_dataX(self):
