@@ -9,3 +9,6 @@
 .idea/VIP.iml
 *.xml
 *.pyc
+
+
+/jupyter_notebooks/
