@@ -32,10 +32,14 @@ class PipelineStep:
         return self
 
     def set_data(self, data):
+        # is file
         if os.path.isfile(data):
             with codecs.open(data, "r", encoding='utf-8-sig') as f:
                 self.data = PData(f.read())
+        # is dir
         elif os.path.isdir(data):
             raise ValueError("TypeError: Expected file path")
+
+        # is str
         elif isinstance(data, str):
             self.data = PData(data)
