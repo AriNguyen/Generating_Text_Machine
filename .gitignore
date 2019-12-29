@@ -14,4 +14,4 @@
 /jupyter_notebooks/
 /sandbox/
 /trained_model/
-*.pkl
+/save/
