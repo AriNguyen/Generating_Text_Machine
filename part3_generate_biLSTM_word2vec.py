@@ -9,7 +9,6 @@
 
 from __future__ import print_function
 from six.moves import cPickle
-from gensim.models.doc2vec import LabeledSentence
 from keras.models import load_model
 
 from pipelining import TokenizeStep
@@ -23,7 +22,7 @@ nlp = spacy.load('en')
 
 global d2v_model
 global vocab_size
-global model
+global word_predictor_model
 global sentence_predictor_model
 global vocabs_to_int
 global words
@@ -41,14 +40,6 @@ def load_models(vocab_model, doc2vec_model, word_predictor_model, sentence_predi
 
     :return: list of 4 loaded models
     """
-    global d2v_model
-    global vocab_size
-    global model
-    global sentence_predictor_model
-    global vocabs_to_int
-    global words
-    global vocab
-    global int_to_vocab
 
     # load the doc2vec model
     print("loading doc2Vec model...")
@@ -60,12 +51,11 @@ def load_models(vocab_model, doc2vec_model, word_predictor_model, sentence_predi
     with open(vocab_model, 'rb') as f:
         words, vocab, vocabs_to_int, int_to_vocab = cPickle.load(f)
 
-    vocab_size = len(vocab)
     print("vocabulary loaded!\n")
 
     # load the keras word prediction model
     print("loading word prediction model...")
-    model = load_model(word_predictor_model)
+    word_predictor_model = load_model(word_predictor_model)
     print("model loaded!\n")
 
     # Load sentence selection model
@@ -73,32 +63,44 @@ def load_models(vocab_model, doc2vec_model, word_predictor_model, sentence_predi
     sentence_predictor_model = load_model(sentence_predictor_model)
     print("model loaded!\n")
 
-    return words, vocab, vocabs_to_int, d2v_model, model, sentence_predictor_model
+    return words, vocab, vocabs_to_int, int_to_vocab, d2v_model, word_predictor_model, sentence_predictor_model
 
 
 def sample(preds, temperature=1.0):
     """Sample an index from a probability array
 
-    :param preds:
-    :param temperature:
-    :return:
+    :param preds: prediction (ndarray)
+    :param temperature (float): hyperparameter to tune predictions
+        if == 1: prediction is not tuned
+        if > 1: range of probabilities is shorten, more words are chosen
+        if < 1: less words are chosen
+    :return: index of the prediction (int)
     """
+    # handling non-array-type preds: convert to array with a dtype of float64
     preds = np.asarray(preds).astype('float64')
-    preds = np.log(preds) / temperature
-    exp_preds = np.exp(preds)
-    preds = exp_preds / np.sum(exp_preds)
-    probas = np.random.multinomial(1, preds, 1)
+
+    # tune preds: softmax function with temperature
+    tuned_preds = np.log(preds)
+    tuned_preds = tuned_preds / temperature
+    exp_preds = np.exp(tuned_preds)
+    tuned_preds = exp_preds / np.sum(exp_preds)
+
+    # calculate probability: draw randomly 1 array of shape tuned_preds wit
+    # probas = [[0, 0, 0,..., 1, ..., 0, 0]]
+    probas = np.random.multinomial(1, tuned_preds, 1)
+
+    # Returns the indices of the maximum values along an axis
     return np.argmax(probas)
 
 
 def create_seed(seed_sentences, nb_words_in_seq=30, verbose=False):
     """ Given <seed_sentences>, return list of the last <nb_words_in_seq> items
 
-    :param seed_sentences: str
-    :param nb_words_in_seq: int
-    :param verbose: boolean
+    :param seed_sentences: (str)
+    :param nb_words_in_seq: (int)
+    :param verbose: (bool)
 
-    :return: list
+    :return: (list) of words
 
     """
     # Create list of tokens from seed_sentences
@@ -118,14 +120,15 @@ def create_seed(seed_sentences, nb_words_in_seq=30, verbose=False):
 def generate_phrase(sentence, max_words=50, nb_words_in_seq=30, temperature=1, verbose=False):
     """ Create next phrase of given sentence
 
-    :param sentence: previous sentence (list)
+    :param sentence: previous sentence (list) - last sentence of the paragraph
         list of words
     :param max_words: max word of generated sentence (int)
         default: 50
-    :param nb_words_in_seq:
-    :param temperature:
+    :param nb_words_in_seq: len of <sentence>
+    :param temperature: hyperparameter to tune predictions
     :param verbose:
-    :return:
+    :return: str, list
+        generated sentence, last <nb_words_in_seq> words of text and new generated sentence
     """
     generated = ""
     words_number = max_words - 1
@@ -136,7 +139,7 @@ def generate_phrase(sentence, max_words=50, nb_words_in_seq=30, temperature=1, v
 
     # generate the text
     for i in range(words_number):
-        # create the vector
+        # create the vector of <sentence>
         x = np.zeros((1, seq_length, vocab_size))
         for t, word in enumerate(sentence):
             # print(t, word, vocabs_to_int[word.lower()])
@@ -144,7 +147,9 @@ def generate_phrase(sentence, max_words=50, nb_words_in_seq=30, temperature=1, v
         # print(x.shape)
 
         # calculate next word
-        preds = model.predict(x, verbose=0)[0]
+        preds = word_predictor_model.predict(x, verbose=0)[0]
+
+        # tune prediction and get the index of the next word
         next_index = sample(preds, temperature)
         next_word = int_to_vocab[next_index]
 
@@ -171,19 +176,25 @@ def define_phrases_candidates(sentence,
                               temperature=1,
                               nb_candidates_sents=10,
                               verbose=False):
-    """
+    """ Given a <sentence>, generate <nb_candidates_sents> potential sentences
+    (best sentence after previous sentence)
 
-    :param sentence:
-    :param max_words:
-    :param nb_words_in_seq:
-    :param temperature:
-    :param nb_candidates_sents:
+    :param sentence: list
+        previous sentence
+    :param max_words: int
+        max words of a potential sentence
+    :param nb_words_in_seq: int
+        number of word in sequence
+    :param temperature: float
+        hyperparameter to tune predictions
+    :param nb_candidates_sents: int)
+        number of potential sentences to generate
     :param verbose:
 
-    :return: list of candidate phrases to
+    :return: list([str, list], [], [])
+        list of potential sentences (best sentence after previous sentence) to
     """
     phrase_candidate = []
-    generated_sentence = ""
     for i in range(nb_candidates_sents):
         generated_sentence, new_sentence = generate_phrase(sentence=sentence,
                                                            max_words=max_words,
@@ -192,7 +203,7 @@ def define_phrases_candidates(sentence,
                                                            verbose=False)
         phrase_candidate.append([generated_sentence, new_sentence])
 
-    if verbose == True:
+    if verbose:
         for phrase in phrase_candidate:
             print("   ", phrase[0])
     return phrase_candidate
@@ -221,26 +232,37 @@ def create_sentences(doc):
 
 
 def generate_training_vector(sentences_list, verbose=False):
-    """
+    """ Generate training vector from list of sentence
 
-    :param sentences_list:
+    :param sentences_list: list of str
+        list of sentences to infer vector
     :param verbose:
 
     :return:
     """
-    if verbose == True: print("generate vectors for each sentence...")
-    seq = []
-    V = []
+    if verbose:
+        print("generate vectors for each sentence...")
+    V = []  # list of inferred vectors of all sentence in <sentences_list>
 
-    for s in sentences_list:
+    for sentence in sentences_list:
+        # Create list of words from <sentence>
+        tokenizer = TokenizeStep()
+        tokenizer.execute(data=sentence)
+        word_list = tokenizer.data.get_word_list()
+
         # infer the vector of the sentence, from the doc2vec model
-        v = d2v_model.infer_vector(create_sentences(nlp(s))[0], alpha=0.001, min_alpha=0.001, steps=10000)
+        v = d2v_model.infer_vector(word_list, alpha=0.001, min_alpha=0.001, steps=10000)
+
         # create the vector array for the model
         V.append(v)
     V_val = np.array(V)
+
     # expand dimension to fit the entry of the model : that's the training vector
     V_val = np.expand_dims(V_val, axis=0)
-    if verbose == True: print("Vectors generated!")
+
+    if verbose:
+        print("Vectors generated!")
+
     return V_val
 
 
@@ -296,8 +318,10 @@ def generate_paragraph(phrase_seed,
     :param max_words: max word of new generated sentence (int)
         default: 50
     :param nb_words_in_seq: number of words to keep as seed for next word prediction
-    :param temperature:
-    :param nb_phrases: number of sentence to generate (int)
+    :param temperature: float
+        hyperparameter to tune predictions
+    :param nb_phrases: int
+        number of sentence to generate
     :param nb_candidates_sents: number of candidates of sentences to generate for each new sentence
     :param verbose: whether print process (boolean)
 
@@ -321,10 +345,10 @@ def generate_paragraph(phrase_seed,
             print("     ", sentences_list)
             print("")
 
-        # generate seed training vector
+        # generate seed training vectors
         V_val = generate_training_vector(sentences_list=sentences_list, verbose=verbose)
 
-        # generate phrase candidate
+        # generate phrase candidates
         if verbose:
             print("generate phrases candidates...")
         phrases_candidates = define_phrases_candidates(sentence=sentence,
@@ -333,15 +357,15 @@ def generate_paragraph(phrase_seed,
                                                        temperature=temperature,
                                                        nb_candidates_sents=nb_candidates_sents,
                                                        verbose=verbose)
-
+        # Select next best sentence (among <phrases_candidates>)
         if verbose:
             print("select next phrase...")
         next_phrase = select_next_phrase(model=sentence_predictor_model,
                                          V_val=V_val,
                                          candidate_list=phrases_candidates,
                                          verbose=verbose)
-
         print("Next phrase: ", next_phrase[0])
+
         if verbose:
             print("")
             print("Shift phrases in sentences list...")
@@ -363,13 +387,19 @@ def generate_paragraph(phrase_seed,
 
 # set directories and file path
 save_dir = 'save'  # directory where models are stored
-vocabs_file = os.path.join(os.getcwd(), "save/words_vocab.pkl")
-doc2vec_file = os.path.join(os.getcwd(), 'trained_model/doc2vec.w2v')
-word_prediction_model = os.path.join(os.getcwd(), 'trained_model/my_model_128_gen_sentences.35-0.97-10.87.hdf5')
-sentence_selection_model = os.path.join(os.getcwd(), 'trained_model/my_model_sequence_lstm.80.hdf5')
+vocabs_file_path = os.path.join(os.getcwd(), "save/words_vocab.pkl")
+doc2vec_file_path = os.path.join(os.getcwd(), 'trained_model/doc2vec.w2v')
+word_prediction_model_path = os.path.join(os.getcwd(), 'trained_model/my_model_gen_sentences.92-0.04.hdf5')
+sentence_selection_model_path = os.path.join(os.getcwd(), 'trained_model/my_model_sequence_lstm.80.hdf5')
 
 # Load models
-load_models(vocabs_file, doc2vec_file, word_prediction_model, sentence_selection_model)
+words, vocab, vocabs_to_int, int_to_vocab, d2v_model, word_predictor_model, sentence_predictor_model = load_models(
+    vocabs_file_path,
+    doc2vec_file_path,
+    word_prediction_model_path,
+    sentence_selection_model_path
+)
+vocab_size = len(vocab)
 
 # Create 15 make-sense sentence to ...
 s1 = r"Poor me!"
@@ -404,9 +434,11 @@ sentences_seed = create_seed(
 
 text = generate_paragraph(phrase_seed=sentences_seed,
                           sentences_seed=sentences_list,
-                          max_words=100,
+                          max_words=50,
                           nb_words_in_seq=30,
-                          temperature=0.2,
+                          temperature=2,
                           nb_phrases=20,
                           nb_candidates_sents=15,
-                          verbose=False)
+                          verbose=True)
+
+a
