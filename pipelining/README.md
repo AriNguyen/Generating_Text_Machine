@@ -20,18 +20,18 @@ pipeline = Pipeline(
 pipeline.execute()
 ```
 
-Class **PipelineData** holds information about the data and gets updated after every pipeline step.
-**WordTokenizer**: After this step, PipelineData stores information about
-    + word_list: list of all words in the text
-    + vocabs: list of unique words in the text
-    + vocabs_to_int: map of unique_word to integer value
-    + int_to_vocabs: map of integer value to vocabulary
+Class **PipelineData** holds information about the data and gets updated after every pipeline step.<br/>
+**WordTokenizer**: After this step, PipelineData stores information about<br/>
+    + word_list: list of all words in the text<br/>
+    + vocabs: list of unique words in the text<br/>
+    + vocabs_to_int: map of unique_word to integer value<br/>
+    + int_to_vocabs: map of integer value to vocabulary<br/>
     + data_size: total number of
 
-**SentenceTokenizer**:
-    + sentence_list: list of segmented sentence
+**SentenceTokenizer**:<br/>
+    + sentence_list: list of segmented sentence<br/>
 
-**Vectorizer**:
-    + sequence_size: size of the independent variable
-    + X: vector of independent variable
-    + y: vector of dependent variable
+**Vectorizer**:<br/>
+    + sequence_size: size of the independent variable<br/>
+    + X: vector of independent variable<br/>
+    + y: vector of dependent variable<br/>
