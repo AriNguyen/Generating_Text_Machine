@@ -5,7 +5,7 @@ A **PipelineStep** can be used as a separated method or can be combined with oth
 - Vectorizer
 
 **Use Pipeline:**
-'''
+```
 import Pipeline
 
 text = ""
@@ -18,7 +18,7 @@ pipeline = Pipeline(
     ]
 )
 pipeline.execute()
-'''
+```
 
 Class **PipelineData** holds information about the data and gets updated after every pipeline step.
 **WordTokenizer**: After this step, PipelineData stores information about
