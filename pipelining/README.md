@@ -3,7 +3,20 @@ A **PipelineStep** can be used as a separated method or can be combined with oth
 - WordTokenizer
 - SentenceTokenizer
 - Vectorizer
+```
+import Pipeline
 
+text = ""
+pipeline = Pipeline(
+    data=text,
+    steps=[
+        WordTokenizer(),
+        SentenceTokenizer(),
+        Vectorizer()
+    ]
+)
+pipeline.execute()
+```
 ## Use Pipeline Step
 ```
 from Pipeline import WordTokenizer, SentenceTokenizer, Vectorizer
@@ -24,22 +37,6 @@ word_tokenizer = WordTokeizer()
 word_tokenizer.execute(data=text, lower_case=True)
 
 ```
-
-## Use Pipeline
-```
-import Pipeline
-
-text = ""
-pipeline = Pipeline(
-    data=text,
-    steps=[
-        WordTokenizer(),
-        SentenceTokenizer(),
-        Vectorizer()
-    ]
-)
-pipeline.execute()
-```
 ## Get pipeline data information
 Class **PipelineData** holds information about the data and gets updated after every pipeline step.<br/>
 - **WordTokenizer**: After this step, PipelineData stores information about<br/>
@@ -56,7 +53,6 @@ Class **PipelineData** holds information about the data and gets updated after e
     + sequence_size: size of the independent variable<br/>
     + X: vector of independent variable<br/>
     + y: vector of dependent variable<br/>
-    
 ```
 data = pipeline.data
 word_list = pipeline.word_list
