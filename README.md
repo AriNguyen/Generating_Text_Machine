@@ -1,4 +1,6 @@
-# Text Processing Pipeline(#https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining)
+# Text Processing Pipeline
+[Pipeline for Python 3](#https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining)
+[Pipeline for Python 2](#https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining_python2)
 
 # Generating_Text_Machine
 Bidirectional LSTM + Word2Vec
