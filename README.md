@@ -1,6 +1,5 @@
 # Text Processing Pipeline
-We're using text preprocessing pipeline to accelerate the process of training model<br/>
-Pipeline instructions can be found at [here](https://github.com/AryaNguyen/Generating_Text_Machine/blob/develop/pipelining/README.md) 
+We're using text preprocessing pipeline to accelerate the process of training model. Instructions on how to use can be found [here](https://github.com/AryaNguyen/Generating_Text_Machine/blob/develop/pipelining/README.md) 
 - [Pipeline for Python 3](https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining)<br/>
 - [Pipeline for Python 2](https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining_python2)<br/>
 
