@@ -6,7 +6,7 @@ I'm using text preprocessing pipeline to accelerate the process of training mode
 
 # Generating Text using Bidirectional Long Short-Term Memmory (LSTM) & Word2Vec</br>
 In this project, I utilize Bidirectional LSTM & Word2vec to learn the writers' choice of words and sentences in their literary works.<br/> 
-In experiment 1, I use "Alice's Adventures in Wonderland" by Lewis Carroll as dataset. "THE SONNETS" by William Shakespeare" is used in experiment 2. The full text of these 2 literature can be found in **text** folder. You can download the files from [Project Gutenberg](https://www.gutenberg.org/) library where this literature is no longer protected by copyright.<br/>
+I use "Alice's Adventures in Wonderland" by Lewis Carroll as dataset in experiment 1 and "THE SONNETS" by William Shakespeare" in experiment 2. The full text of these 2 literature can be found in **text** folder. You can download the files from [Project Gutenberg](https://www.gutenberg.org/) library where this literature is no longer protected by copyright.<br/>
 
 **Step 1: Train word predicting model**<br/>
 - save/words_vocab.pkl: hold [words, vocabs, vocab_to_int, int_to_vocab]<br/>
