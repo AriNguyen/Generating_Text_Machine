@@ -1,4 +1,5 @@
 # Text Processing Pipeline
+We're using text preprocessing pipeline to accelerate the process of training model
 [Pipeline for Python 3](https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining)<br/>
 [Pipeline for Python 2](https://github.com/AryaNguyen/Generating_Text_Machine/tree/master/pipelining_python2)
 
