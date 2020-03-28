@@ -1,0 +1,62 @@
+# Pipeline 
+A **PipelineStep** can be used as a separated method or can be combined with other pipeline steps.
+- WordTokenizer
+- SentenceTokenizer
+- Vectorizer
+```
+import Pipeline
+
+text = ""
+pipeline = Pipeline(
+    data=text,
+    steps=[
+        WordTokenizer(),
+        SentenceTokenizer(),
+        Vectorizer()
+    ]
+)
+pipeline.execute()
+```
+## Use Pipeline Step
+```
+from Pipeline import WordTokenizer, SentenceTokenizer, Vectorizer
+
+text = ""
+
+word_tokenizer = WordTokeizer(data=text, lower_case=True)
+word_tokenizer.execute()
+
+```
+Arguments can be passed in the execute method:
+```
+from Pipeline import WordTokenizer, SentenceTokenizer, Vectorizer
+
+text = ""
+
+word_tokenizer = WordTokeizer()
+word_tokenizer.execute(data=text, lower_case=True)
+
+```
+## Get pipeline data information
+Class **PipelineData** holds information about the data and gets updated after every pipeline step.<br/>
+- **WordTokenizer**: After this step, PipelineData stores information about<br/>
+    + word_list: list of all words in the text<br/>
+    + vocabs: list of unique words in the text<br/>
+    + vocabs_to_int: map of unique_word to integer value<br/>
+    + int_to_vocabs: map of integer value to vocabulary<br/>
+    + data_size: total number of
+
+- **SentenceTokenizer**:<br/>
+    + sentence_list: list of segmented sentence<br/>
+
+- **Vectorizer**:<br/>
+    + sequence_size: size of the independent variable<br/>
+    + X: vector of independent variable<br/>
+    + y: vector of dependent variable<br/>
+```
+data = pipeline.data
+word_list = pipeline.word_list
+sentence_list = pipeline.sentence_list
+X = pipeline.X
+Y = pipeline.Y
+```
