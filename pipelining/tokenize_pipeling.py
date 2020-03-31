@@ -9,33 +9,23 @@
 from .pipeline_step import PipelineStep
 
 import nltk
-import string
-import warnings
 import spacy
 nlp = spacy.load('en')
 
 
-def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
-    return '{}:{}:\n    {}: {}\n'.format(filename, lineno, category.__name__, message)
-
-
 class TokenizeStep(PipelineStep):
     def __init__(self, vocab_file_path=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(TokenizeStep, self).__init__(*args, **kwargs)
         self.vocab_file_path = vocab_file_path
 
     def execute(self, vocab_file_path=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(TokenizeStep, self).__init__(*args, **kwargs)
 
         if vocab_file_path is not None:
             self.vocab_file_path = vocab_file_path
 
         # convert all to lower case
         data = self.data.get_data().lower()
-
-        # Warn user about lowering all words in text
-        warnings.formatwarning = warning_on_one_line
-        warnings.warn('Text input is transformed to lowercase')
 
         #
         for i in ['s', 'll', 've', 're', 'm', 't', 'd']:
