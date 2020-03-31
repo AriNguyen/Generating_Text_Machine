@@ -16,11 +16,11 @@ class Pipeline(PipelineStep):
         :param data: must be path of text file or string
         :param steps: must be iterable form
         """
-        super().__init__(data=data, **kwargs)
+        super(Pipeline, self).__init__(data=data, **kwargs)
         self._steps = steps
 
     def execute(self, **kwargs):
-        super().__init__(**kwargs)
+        super(Pipeline, self).__init__(**kwargs)
         for step_name, step_obj in self._steps:
             self.data = step_obj.execute(data=self.data, **kwargs).data
         return self
