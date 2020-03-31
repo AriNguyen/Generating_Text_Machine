@@ -1,16 +1,13 @@
 
+.DS_Store
 .ipynb_checkpoints/Visualizing-checkpoint.ipynb
 *.ipynb
-.DS_Store
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/misc.xml
-.idea/modules.xml
-.idea/workspace.xml
-.idea/VIP.iml
 *.xml
+*.iml
 *.pyc
 
-
+# folder
+.idea/
 /jupyter_notebooks/
 /sandbox/
 /trained_model/
