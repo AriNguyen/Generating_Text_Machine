@@ -1,5 +1,5 @@
 nltk==3.4.5
-numpy==1.18.2
+numpy==1.22.0
 Keras==2.3.1
 scipy==1.4.1
 spacy==2.2.4
